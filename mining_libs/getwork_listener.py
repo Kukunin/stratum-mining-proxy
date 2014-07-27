@@ -12,7 +12,7 @@ class Root(Resource):
     isLeaf = True
     
     def __init__(self, job_registry, workers, stratum_host, stratum_port,
-                 custom_stratum=None, custom_lp=None, custom_user=None, custom_password=''):
+                 custom_stratum=None, custom_lp=None, custom_user=None, custom_password='', cors=False):
         Resource.__init__(self)
         self.job_registry = job_registry
         self.workers = workers
@@ -22,7 +22,8 @@ class Root(Resource):
         self.custom_lp = custom_lp
         self.custom_user = custom_user
         self.custom_password = custom_password
-        
+        self.cors = cors
+
     def json_response(self, msg_id, result):
         resp = json.dumps({'id': msg_id, 'result': result, 'error': None})
         #print "RESPONSE", resp
@@ -139,8 +140,19 @@ class Root(Resource):
             # RuntimeError is thrown by Request class when
             # client is disconnected already
             pass
-        
-    def render_POST(self, request):        
+
+    def render(self, request):
+        if self.cors:
+            request.setHeader('Access-Control-Allow-Origin', '*')
+            request.setHeader('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS')
+            request.setHeader('Access-Control-Allow-Headers', 'authorization, content-type')
+
+        if request.method != "OPTIONS" or not self.cors:
+            return Resource.render(self, request)
+        else:
+            return ""
+
+    def render_POST(self, request):
         self._prepare_headers(request)
 
         (worker_name, password) = (request.getUser(), request.getPassword())

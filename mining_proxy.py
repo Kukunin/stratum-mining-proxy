@@ -46,6 +46,7 @@ def parse_args():
     parser.add_argument('-i', '--pid-file', dest='pid_file', type=str, help='Store process pid to the file')
     parser.add_argument('-l', '--log-file', dest='log_file', type=str, help='Log to specified file')
     parser.add_argument('-st', '--scrypt-target', dest='scrypt_target', action='store_true', help='Calculate targets for scrypt algorithm')
+    parser.add_argument('-cors', '--cross-origin-resource-sharing', dest='cors', action='store_true', help='Returns allowable headers to make cross-origin AJAX calls possible')
     return parser.parse_args()
 
 from stratum import settings
@@ -239,8 +240,8 @@ def main(args):
         conn = reactor.listenTCP(args.getwork_port, Site(getwork_listener.Root(job_registry, workers,
                                                     stratum_host=args.stratum_host, stratum_port=args.stratum_port,
                                                     custom_lp=args.custom_lp, custom_stratum=args.custom_stratum,
-                                                    custom_user=args.custom_user, custom_password=args.custom_password)),
-                                                    interface=args.getwork_host)
+                                                    custom_user=args.custom_user, custom_password=args.custom_password,
+                                                    cors=args.cors)), interface=args.getwork_host)
 
         try:
             conn.socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1) # Enable keepalive packets
